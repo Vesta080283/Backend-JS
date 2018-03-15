@@ -3,9 +3,9 @@
   "//2": "https://docs.npmjs.com/files/package.json",
   "//3": "updating this file will download and update your packages",
 
-  "name": "my-glitch-app",
+  "name": "Microservice time stamp",
   "version": "0.0.1",
-  "description": "What am I about?",
+  "description": "FCC  backend project",
   "scripts": {
     "start": "node server.js"
   },
