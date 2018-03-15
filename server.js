@@ -1,34 +1,51 @@
-'use strict';
+// server.js
+// where your node app starts
 
-var express = require('express');
-var routes = require('./app/routes/index.js');
-var mongoose = require('mongoose');
-var passport = require('passport');
-var session = require('express-session');
+// init project
+const express = require('express')
+const app = express()
 
-var app = express();
-require('dotenv').load();
-require('./app/config/passport')(passport);
+// we've started you off with Express, 
+// but feel free to use whatever libs or frameworks you'd like through `package.json`.
 
-mongoose.connect(process.env.MONGO_URI);
-mongoose.Promise = global.Promise;
+// http://expressjs.com/en/starter/static-files.html
+app.use(express.static('public'))
 
-app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
-app.use('/public', express.static(process.cwd() + '/public'));
-app.use('/common', express.static(process.cwd() + '/app/common'));
-
-app.use(session({
-	secret: 'secretClementine',
-	resave: false,
-	saveUninitialized: true
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-routes(app, passport);
-
-var port = process.env.PORT || 8080;
-app.listen(port,  function () {
-	console.log('Node.js listening on port ' + port + '...');
+app.get("/",(req,res) => {
+  res.sendFile(__dirname + '/views/index.html')
 });
+
+app.use("/:dateVal",(req,res) => {
+    try{
+      decodeURIComponent(req.params.dateVal)
+    }catch(error){
+      console.log(error)
+      res.send("Bad Request")
+    }
+    var param = decodeURIComponent(req.params.dateVal);
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+    var dateOptions = {month : 'long' , year: 'numeric' , day: 'numeric'};
+    //treating natural date input
+    if(isNaN(param)){
+      if(String(new Date(param)) === "Invalid Date"){
+        res.json({unix:null, natural:null}); 
+      }
+      var naturalDate = new Date(param);
+      naturalDate = naturalDate.toLocaleDateString('en-US', dateOptions);
+      var unixDate = new Date(param).getTime()/1000;
+    }
+    //treating unix input
+    else{
+      var unixDate = Number(param)
+      var naturalDate = new Date(unixDate*1000);
+      naturalDate = naturalDate.toLocaleDateString('en-US', dateOptions);
+    }
+    res.json({unix:unixDate, natural:naturalDate}); 
+
+   
+})
+// listen for requests :)
+const  listener = app.listen(process.env.PORT, () => {
+  console.log(`Your app is listening on port ${listener.address().port}`)
+
+})
